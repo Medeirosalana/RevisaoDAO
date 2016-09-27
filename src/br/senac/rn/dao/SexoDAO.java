@@ -20,4 +20,5 @@ public class SexoDAO {
     public boolean update(Sexo sexo){}
     public List<Sexo> selectAll(){}
     public Sexo selectbyId(int id){}
+    public Sexo selectbyFilter(String filter){}
 }

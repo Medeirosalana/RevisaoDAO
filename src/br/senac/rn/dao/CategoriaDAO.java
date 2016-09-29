@@ -1,5 +1,6 @@
 package br.senac.rn.dao;
 
+import br.senac.rn.model.Categoria;
 import br.senac.rn.model.Sexo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,23 +8,23 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SexoDAO {
-
+public class CategoriaDAO {
+    
      private final DataBase db;
     private PreparedStatement ps;
     private ResultSet rs;
     private String sql;
     
-    public SexoDAO(){
+    public CategoriaDAO(){
     db = new DataBase();
     }
-    public boolean inset(Sexo sexo){
+    public boolean inset(Categoria cat){
      if(db.open()){
-            sql = "INSERT INTO sexo(nome, sigla)VALUES(?,?)";
+            sql = "INSERT INTO categoria(nome)VALUES(?)";
             try{
                 ps = db.connerction.prepareStatement(sql);
-                ps.setString(1, sexo.getNome());
-                ps.setString(2, sexo.getSigla());      
+                ps.setString(1, cat.getNome());
+                   
                 if(ps.executeUpdate() == 1){
                     ps.close();
                     db.close();
@@ -36,12 +37,12 @@ public class SexoDAO {
         db.close();
         return false;
     }
-    public boolean delete(Sexo sexo){
+    public boolean delete(Categoria cat){
      if(db.open()){
-        sql = "DELETE FROM sexo WHERE id = ?";
+        sql = "DELETE FROM categoria WHERE id = ?";
             try{
                 ps = db.connerction.prepareStatement(sql);
-                ps.setInt(1, sexo.getId());
+                ps.setInt(1, cat.getId());
                 if(ps.executeUpdate() == 1){
                 ps.close();
                 db.close();
@@ -55,14 +56,13 @@ public class SexoDAO {
         return false;
          
     }
-    public boolean update(Sexo sexo){
+    public boolean update(Categoria cat){
      if(db.open()){
-        sql = "UPDATE sexo SET nome = ?, sigla = ?  WHERE id = ?";
+        sql = "UPDATE categoria SET nome = ?  WHERE id = ?";
             try{
             ps = db.connerction.prepareStatement(sql);
-            ps.setString(1, sexo.getNome());
-            ps.setString(2, sexo.getSigla()); 
-            ps.setInt(3, sexo.getId());
+            ps.setString(1, cat.getNome());
+            ps.setInt(2, cat.getId());
             if(ps.executeUpdate() == 1){
             ps.close();
             db.close();
@@ -77,27 +77,27 @@ public class SexoDAO {
         return false;
         
     }
-    public List<Sexo> selectAll(){
+    public List<Categoria> selectAll(){
      if(db.open()){            
-            List<Sexo> sexos = new ArrayList();
+            List<Categoria> categorias = new ArrayList();
             
-            sql ="SELECT * FROM sexo";
+            sql ="SELECT * FROM categoria";
             try{
                 ps = db.connerction.prepareStatement(sql);
                 rs = ps.executeQuery();
                 while(rs.next()){
-                Sexo sexo = new Sexo();
+                Categoria cat = new Categoria();
                 
                 
-                sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));               
-                sexos.add(sexo);
+                cat.setId(rs.getInt(1));
+                cat.setNome(rs.getString(2));
+                            
+                categorias.add(cat);
                 }
                 rs.close();
                 ps.close();
                 db.close();
-                return sexos;
+                return categorias;
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
             }
@@ -105,22 +105,22 @@ public class SexoDAO {
         db.close();               
         return null;
     }
-    public Sexo selectbyId(int id){
+    public Categoria selectbyId(int id){
     if(db.open()){
-            Sexo sexo = new Sexo();
-            sql ="SELECT * FROM sexo WHERE id = ?";
+            Categoria cat = new Categoria();
+            sql ="SELECT * FROM categoria WHERE id = ?";
             try{
                 ps = db.connerction.prepareStatement(sql);
                 ps.setInt(1, id);
                 rs = ps.executeQuery();
                 if(rs.next()){
-                 sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));
+                 cat.setId(rs.getInt(1));
+                cat.setNome(rs.getString(2));
+               
                 rs.close();
                 ps.close();
                 db.close();
-                return sexo;
+                return cat;
                 }
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
@@ -129,28 +129,26 @@ public class SexoDAO {
         db.close();
         return null;
     }
-    public List<Sexo> selectbyFilter(String filter){
+    public List<Categoria> selectbyFilter(String filter){
     if(db.open()){            
-            List<Sexo> sexos = new ArrayList();
+            List<Categoria> categorias = new ArrayList();
             String filtro = "%" + filter + "%";
-            sql ="SELECT * FROM sexo WHERE nome LIKE ? OR sigla LIKE ?";            
+            sql ="SELECT * FROM categoria WHERE nome LIKE ?";            
             try{
                 ps = db.connerction.prepareStatement(sql);
                 ps.setString(1, filtro);
                 ps.setString(2, filtro);
                 rs = ps.executeQuery();
                 while(rs.next()){
-                Sexo sexo = new Sexo(); 
-                sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));
-              
-                sexos.add(sexo);
+                Categoria cat = new Categoria();
+                cat.setId(rs.getInt(1));
+                cat.setNome(rs.getString(2));
+                categorias.add(cat);
                 }
                 rs.close();
                 ps.close();
                 db.close();
-                return sexos;
+                return categorias;
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
             }

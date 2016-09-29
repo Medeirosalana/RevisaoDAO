@@ -1,29 +1,30 @@
 package br.senac.rn.dao;
 
-import br.senac.rn.model.Sexo;
+import br.senac.rn.model.Produto;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SexoDAO {
+public class ProdutosDAO {
 
      private final DataBase db;
     private PreparedStatement ps;
     private ResultSet rs;
     private String sql;
     
-    public SexoDAO(){
+    public ProdutosDAO(){
     db = new DataBase();
     }
-    public boolean inset(Sexo sexo){
+    public boolean inset(Produto pro){
      if(db.open()){
-            sql = "INSERT INTO sexo(nome, sigla)VALUES(?,?)";
+            sql = "INSERT INTO produto(nome, valor, id_categoria)VALUES(?,?,?)";
             try{
                 ps = db.connerction.prepareStatement(sql);
-                ps.setString(1, sexo.getNome());
-                ps.setString(2, sexo.getSigla());      
+                ps.setString(1, pro.getNome());
+                ps.setFloat(2, pro.getValor());
+                ps.setInt(3, pro.getCategoria().getId());
                 if(ps.executeUpdate() == 1){
                     ps.close();
                     db.close();
@@ -36,12 +37,12 @@ public class SexoDAO {
         db.close();
         return false;
     }
-    public boolean delete(Sexo sexo){
+    public boolean delete(Produto pro){
      if(db.open()){
-        sql = "DELETE FROM sexo WHERE id = ?";
+        sql = "DELETE FROM produto WHERE id = ?";
             try{
                 ps = db.connerction.prepareStatement(sql);
-                ps.setInt(1, sexo.getId());
+                ps.setInt(1, pro.getId());
                 if(ps.executeUpdate() == 1){
                 ps.close();
                 db.close();
@@ -55,14 +56,15 @@ public class SexoDAO {
         return false;
          
     }
-    public boolean update(Sexo sexo){
+    public boolean update(Produto pro){
      if(db.open()){
-        sql = "UPDATE sexo SET nome = ?, sigla = ?  WHERE id = ?";
+        sql = "UPDATE produto SET nome = ?, id_categoria = ?, valor = ?  WHERE id = ?";
             try{
             ps = db.connerction.prepareStatement(sql);
-            ps.setString(1, sexo.getNome());
-            ps.setString(2, sexo.getSigla()); 
-            ps.setInt(3, sexo.getId());
+            ps.setString(1, pro.getNome());
+            ps.setInt(2, pro.getCategoria().getId());
+            ps.setFloat(3, pro.getValor());
+            ps.setInt(4, pro.getId());
             if(ps.executeUpdate() == 1){
             ps.close();
             db.close();
@@ -77,27 +79,29 @@ public class SexoDAO {
         return false;
         
     }
-    public List<Sexo> selectAll(){
+    public List<Produto> selectAll(){
      if(db.open()){            
-            List<Sexo> sexos = new ArrayList();
+            List<Produto> produtos = new ArrayList();
             
-            sql ="SELECT * FROM sexo";
+            sql ="SELECT * FROM produto";
             try{
                 ps = db.connerction.prepareStatement(sql);
                 rs = ps.executeQuery();
                 while(rs.next()){
-                Sexo sexo = new Sexo();
+                Produto pro = new Produto();
+                CategoriaDAO dao = new CategoriaDAO();
                 
                 
-                sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));               
-                sexos.add(sexo);
+                pro.setId(rs.getInt(1));
+                pro.setNome(rs.getString(2));
+                pro.setValor(rs.getFloat(3)); 
+                pro.setCategoria(dao.selectbyId(rs.getInt(4)));
+                produtos.add(pro);
                 }
                 rs.close();
                 ps.close();
                 db.close();
-                return sexos;
+                return produtos;
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
             }
@@ -105,22 +109,24 @@ public class SexoDAO {
         db.close();               
         return null;
     }
-    public Sexo selectbyId(int id){
+    public Produto selectbyId(int id){
     if(db.open()){
-            Sexo sexo = new Sexo();
-            sql ="SELECT * FROM sexo WHERE id = ?";
+            Produto p = new Produto();
+            CategoriaDAO dao = new CategoriaDAO();
+            sql ="SELECT * FROM produto WHERE id = ?";
             try{
                 ps = db.connerction.prepareStatement(sql);
                 ps.setInt(1, id);
                 rs = ps.executeQuery();
                 if(rs.next()){
-                 sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));
+                 p.setId(rs.getInt(1));
+                p.setNome(rs.getString(2));
+                p.setValor(rs.getFloat(3));
+                p.setCategoria(dao.selectbyId(rs.getInt(4)));
                 rs.close();
                 ps.close();
                 db.close();
-                return sexo;
+                return p;
                 }
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
@@ -129,33 +135,34 @@ public class SexoDAO {
         db.close();
         return null;
     }
-    public List<Sexo> selectbyFilter(String filter){
+    public List<Produto> selectbyFilter(String filter){
     if(db.open()){            
-            List<Sexo> sexos = new ArrayList();
+            List<Produto> produtos = new ArrayList();
             String filtro = "%" + filter + "%";
-            sql ="SELECT * FROM sexo WHERE nome LIKE ? OR sigla LIKE ?";            
+            sql ="SELECT * FROM produto WHERE nome LIKE ?";            
             try{
                 ps = db.connerction.prepareStatement(sql);
                 ps.setString(1, filtro);
                 ps.setString(2, filtro);
                 rs = ps.executeQuery();
                 while(rs.next()){
-                Sexo sexo = new Sexo(); 
-                sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));
-              
-                sexos.add(sexo);
+                Produto p = new Produto();
+                CategoriaDAO dao = new CategoriaDAO();
+                p.setId(rs.getInt(1));
+                p.setNome(rs.getString(2));
+                p.setValor(rs.getFloat(3));
+                p.setCategoria(dao.selectbyId(rs.getInt(4)));
+                produtos.add(p);
                 }
                 rs.close();
                 ps.close();
                 db.close();
-                return sexos;
+                return produtos;
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
             }
         }
         db.close();
-        return null; 
+        return null;
     }
 }

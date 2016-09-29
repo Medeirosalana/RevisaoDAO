@@ -1,5 +1,6 @@
 package br.senac.rn.dao;
 
+import br.senac.rn.model.Cliente;
 import br.senac.rn.model.Sexo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,23 +8,25 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SexoDAO {
+public class ClienteDAO {
 
+    
      private final DataBase db;
     private PreparedStatement ps;
     private ResultSet rs;
     private String sql;
     
-    public SexoDAO(){
+    public ClienteDAO(){
     db = new DataBase();
     }
-    public boolean inset(Sexo sexo){
+    public boolean inset(Cliente cli){
      if(db.open()){
-            sql = "INSERT INTO sexo(nome, sigla)VALUES(?,?)";
+            sql = "INSERT INTO cliente(nome, cpf, id_sexo)VALUES(?,?,?)";
             try{
                 ps = db.connerction.prepareStatement(sql);
-                ps.setString(1, sexo.getNome());
-                ps.setString(2, sexo.getSigla());      
+                ps.setString(1, cli.getNome());
+                ps.setString(2, cli.getCpf());
+                ps.setInt(3, cli.getSexo().getId());
                 if(ps.executeUpdate() == 1){
                     ps.close();
                     db.close();
@@ -36,12 +39,12 @@ public class SexoDAO {
         db.close();
         return false;
     }
-    public boolean delete(Sexo sexo){
+    public boolean delete(Cliente cli){
      if(db.open()){
-        sql = "DELETE FROM sexo WHERE id = ?";
+        sql = "DELETE FROM cliente WHERE id = ?";
             try{
                 ps = db.connerction.prepareStatement(sql);
-                ps.setInt(1, sexo.getId());
+                ps.setInt(1, cli.getId());
                 if(ps.executeUpdate() == 1){
                 ps.close();
                 db.close();
@@ -55,14 +58,15 @@ public class SexoDAO {
         return false;
          
     }
-    public boolean update(Sexo sexo){
+    public boolean update(Cliente cli){
      if(db.open()){
-        sql = "UPDATE sexo SET nome = ?, sigla = ?  WHERE id = ?";
+        sql = "UPDATE cliente SET nome = ?, cpf = ?, id_sexo = ?  WHERE id = ?";
             try{
             ps = db.connerction.prepareStatement(sql);
-            ps.setString(1, sexo.getNome());
-            ps.setString(2, sexo.getSigla()); 
-            ps.setInt(3, sexo.getId());
+            ps.setString(1, cli.getNome());
+            ps.setString(2, cli.getCpf());
+            ps.setInt(3, cli.getSexo().getId());
+            ps.setInt(4, cli.getId());
             if(ps.executeUpdate() == 1){
             ps.close();
             db.close();
@@ -77,27 +81,28 @@ public class SexoDAO {
         return false;
         
     }
-    public List<Sexo> selectAll(){
+    public List<Cliente> selectAll(){
      if(db.open()){            
-            List<Sexo> sexos = new ArrayList();
+            List<Cliente> clientes = new ArrayList();
             
-            sql ="SELECT * FROM sexo";
+            sql ="SELECT * FROM cliente";
             try{
                 ps = db.connerction.prepareStatement(sql);
                 rs = ps.executeQuery();
                 while(rs.next()){
-                Sexo sexo = new Sexo();
+                Cliente cli = new Cliente();
+                SexoDAO dao = new SexoDAO();
                 
-                
-                sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));               
-                sexos.add(sexo);
+                cli.setId(rs.getInt(1));
+                cli.setNome(rs.getString(2));
+                cli.setCpf(rs.getString(3)); 
+                cli.setSexo(dao.selectbyId(rs.getInt(4)));
+                clientes.add(cli);
                 }
                 rs.close();
                 ps.close();
                 db.close();
-                return sexos;
+                return clientes;
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
             }
@@ -105,22 +110,24 @@ public class SexoDAO {
         db.close();               
         return null;
     }
-    public Sexo selectbyId(int id){
+    public Cliente selectbyId(int id){
     if(db.open()){
-            Sexo sexo = new Sexo();
-            sql ="SELECT * FROM sexo WHERE id = ?";
+            Cliente cli = new Cliente();
+            SexoDAO dao = new SexoDAO();
+            sql ="SELECT * FROM cliente WHERE id = ?";
             try{
                 ps = db.connerction.prepareStatement(sql);
                 ps.setInt(1, id);
                 rs = ps.executeQuery();
                 if(rs.next()){
-                 sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));
+                 cli.setId(rs.getInt(1));
+                cli.setNome(rs.getString(2));
+                cli.setCpf(rs.getString(3));
+                cli.setSexo(dao.selectbyId(rs.getInt(4)));
                 rs.close();
                 ps.close();
                 db.close();
-                return sexo;
+                return cli;
                 }
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
@@ -129,28 +136,29 @@ public class SexoDAO {
         db.close();
         return null;
     }
-    public List<Sexo> selectbyFilter(String filter){
+    public List<Cliente> selectbyFilter(String filter){
     if(db.open()){            
-            List<Sexo> sexos = new ArrayList();
+            List<Cliente> clientes = new ArrayList();
             String filtro = "%" + filter + "%";
-            sql ="SELECT * FROM sexo WHERE nome LIKE ? OR sigla LIKE ?";            
+            sql ="SELECT * FROM cliente WHERE nome LIKE ? OR id_sexo LIKE ?";            
             try{
                 ps = db.connerction.prepareStatement(sql);
                 ps.setString(1, filtro);
                 ps.setString(2, filtro);
                 rs = ps.executeQuery();
                 while(rs.next()){
-                Sexo sexo = new Sexo(); 
-                sexo.setId(rs.getInt(1));
-                sexo.setNome(rs.getString(2));
-                sexo.setSigla(rs.getString(3));
-              
-                sexos.add(sexo);
+                Cliente cli = new Cliente();
+                SexoDAO dao = new SexoDAO();
+                cli.setId(rs.getInt(1));
+                cli.setNome(rs.getString(2));
+                cli.setCpf(rs.getString(3));
+                cli.setSexo(dao.selectbyId(rs.getInt(4)));
+                clientes.add(cli);
                 }
                 rs.close();
                 ps.close();
                 db.close();
-                return sexos;
+                return clientes;
             }catch(SQLException error){
              System.out.println("ERROR: " + error.toString());
             }
